@@ -1,3 +1,6 @@
+use rand::RngExt;
+use std::time::{SystemTime, UNIX_EPOCH};
+
 fn merge<T: Ord + Copy>(array: &mut [T], p: usize, q: usize, r: usize) -> &mut [T] {
     let left_len = q - p + 1;
     let right_len = r - q;
@@ -82,11 +85,23 @@ mod tests {
         merge(&mut arr, 0, 0, 1);
         assert_eq!(arr, vec![1, 2]);
     }
+    #[test]
+    fn test_merge_sort() {
+        let mut arr = vec![4, 5, 6, 1, 2, 3];
+        let arr_len = arr.len();
+        merge_sort(&mut arr, 0, arr_len - 1);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5, 6]);
+    }
 }
 
 fn main() {
-    let mut arr = vec![1, 3, 5, 2, 4, 6];
-    let arr_len = arr.len();
-    let result = merge_sort(&mut arr, 0, arr_len - 1);
-    println!("{:?}", result);
+    let mut input: Vec<u64> = (0..1_000_000)
+        .map(|_| rand::rng().random_range(0..1_000_000_000))
+        .collect();
+    let arr_len = input.len();
+
+    let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+    merge_sort(&mut input[..], 0, arr_len - 1);
+    let end = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+    println!("Duration: {} ms", end.as_millis() - start.as_millis());
 }
