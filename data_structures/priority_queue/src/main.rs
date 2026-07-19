@@ -6,7 +6,10 @@ pub struct MaxPriorityQueue<T> {
 
 impl<T: Ord> MaxPriorityQueue<T> {
     pub fn new() -> Self {
-        Self { heap: Vec::new(),  heap_size: 0, }
+        Self {
+            heap: Vec::new(),
+            heap_size: 0,
+        }
     }
 
     pub fn from_vec(mut heap: Vec<T>) -> Self {
@@ -28,14 +31,13 @@ impl<T: Ord> MaxPriorityQueue<T> {
             return None;
         }
 
-        self.heap.swap(0, self.heap_size -1);
+        self.heap.swap(0, self.heap_size - 1);
         self.heap_size -= 1;
 
         if self.heap_size > 0 {
             max_heapify(&mut self.heap, 0, self.heap_size);
         }
         Some(&self.heap[self.heap_size])
-
     }
 
     pub fn increase_key(&mut self, mut i: usize, key: T) -> Result<(), &'static str> {
@@ -96,7 +98,7 @@ fn right(i: usize) -> usize {
     2 * i + 2
 }
 
-fn max_heapify<T: Ord>(heap: &mut [T], i: usize,  heap_size: usize,) {
+fn max_heapify<T: Ord>(heap: &mut [T], i: usize, heap_size: usize) {
     let left = left(i);
     let right = right(i);
 
@@ -106,7 +108,7 @@ fn max_heapify<T: Ord>(heap: &mut [T], i: usize,  heap_size: usize,) {
         largest = left;
     }
 
-    if right <heap_size && heap[right] > heap[largest] {
+    if right < heap_size && heap[right] > heap[largest] {
         largest = right;
     }
 
@@ -116,8 +118,7 @@ fn max_heapify<T: Ord>(heap: &mut [T], i: usize,  heap_size: usize,) {
     }
 }
 
-fn build_max_heap<T: Ord>(heap: &mut [T],  heap_size: usize,) {
-
+fn build_max_heap<T: Ord>(heap: &mut [T], heap_size: usize) {
     for i in (0..heap.len() / 2).rev() {
         max_heapify(heap, i, heap_size);
     }
