@@ -54,20 +54,3 @@ fn merge_sort<T: Ord + Copy>(array: &mut [T], k: usize) -> Vec<T> {
         new_array
     }
 }
-
-fn main() {
-    for k in (1..64).rev() {
-        let mut input: Vec<u64> = (0..9_000_000)
-            .map(|_| rand::rng().random_range(0..1_000_000_000))
-            .collect();
-
-        let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-        merge_sort(&mut input[..], k);
-        let end = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-        println!(
-            "Duration: {} ms, k: {}",
-            end.as_millis() - start.as_millis(),
-            k
-        );
-    }
-}

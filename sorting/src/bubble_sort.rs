@@ -29,13 +29,3 @@ mod tests {
         assert_eq!(bubble_sort(&mut v), [1, 3, 4, 5, 6]);
     }
 }
-fn main() {
-    let mut input: Vec<u64> = (0..30_000)
-        .map(|_| rand::rng().random_range(0..1_000_000_000))
-        .collect();
-
-    let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-    bubble_sort(&mut input);
-    let end = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-    println!("Duration: {} ms", end.as_millis() - start.as_millis());
-}

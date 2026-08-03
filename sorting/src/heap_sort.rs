@@ -165,8 +165,3 @@ mod tests {
         assert_eq!(arr, vec![1, 2, 3, 6, 8, 9, 128]);
     }
 }
-fn main() {
-    let mut array1 = [128, 3, 6, 2, 1, 8, 9];
-    heap_sort(&mut array1);
-    println!("{:?}", array1);
-}
