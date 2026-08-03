@@ -1,5 +1,4 @@
 use crate::observer::TerminalObserver;
-use crate::quick_sort::quick_sort;
 
 mod bubble_sort;
 mod heap_sort;
@@ -17,7 +16,9 @@ fn main() {
     println!("{:?}", data);
 
     let mut observer = TerminalObserver;
-    quick_sort(&mut data, &mut observer);
+    quick_sort::quick_sort(&mut data, &mut observer);
+    //bubble_sort::bubble_sort(&mut data, &mut observer);
+    //insertion_sort::insertion_sort(&mut data, &mut observer);
 
     println!("After:");
     println!("{:?}", data);

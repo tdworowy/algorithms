@@ -1,4 +1,4 @@
-use crate::observer::SortObserver;
+use crate::observer::{SortObserver, VisualArray};
 
 pub fn quick_sort<T, O>(array: &mut [T], observer: &mut O)
 where
@@ -8,26 +8,28 @@ where
     if array.len() <= 1 {
         return;
     }
-    let len = array.len();
-    quick_sort_range(array, 0, len - 1, observer);
+
+    let mut arr = VisualArray::new(array, observer);
+    let len = arr.len();
+    quick_sort_range(&mut arr, 0, len - 1);
 }
-fn quick_sort_range<T, O>(array: &mut [T], low: usize, high: usize, observer: &mut O)
+
+fn quick_sort_range<T, O>(arr: &mut VisualArray<'_, T, O>, low: usize, high: usize)
 where
     T: Ord,
     O: SortObserver<T>,
 {
     if low < high {
-        let p = partition(array, low, high, observer);
+        let p = partition(arr, low, high);
 
         if p > 0 {
-            quick_sort_range(array, low, p - 1, observer);
+            quick_sort_range(arr, low, p - 1);
         }
-
-        quick_sort_range(array, p + 1, high, observer);
+        quick_sort_range(arr, p + 1, high);
     }
 }
 
-fn partition<T, O>(array: &mut [T], low: usize, high: usize, observer: &mut O) -> usize
+fn partition<T, O>(arr: &mut VisualArray<'_, T, O>, low: usize, high: usize) -> usize
 where
     T: Ord,
     O: SortObserver<T>,
@@ -36,15 +38,13 @@ where
     let mut i = low;
 
     for j in low..high {
-        observer.compare(array, j, pivot);
-        if array[j] <= array[pivot] {
-            array.swap(i, j);
-            observer.swap(array, i, j);
+        if arr.compare(j, pivot).is_le() {
+            arr.swap(i, j);
             i += 1;
         }
     }
-    array.swap(i, high);
-    observer.swap(array, i, high);
+
+    arr.swap(i, high);
     i
 }
 #[cfg(test)]
