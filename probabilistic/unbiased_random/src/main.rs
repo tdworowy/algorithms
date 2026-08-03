@@ -16,38 +16,23 @@ fn unbiased_random() -> u8 {
     unbiased_random()
 }
 
+fn extract_unbiased(p: f64) -> u8 {
+    loop {
+        let x1 = biased_random(p);
+        let x2 = biased_random(p);
+
+        match (x1, x2) {
+            (0, 1) => return 1,
+            (1, 0) => return 0,
+            _ => continue,
+        }
+    }
+}
+
 fn unbiased_random_different_bias() -> u8 {
-    let a1 = biased_random(0.2);
-    let a2 = biased_random(0.2);
-    let b1 = biased_random(0.8);
-    let b2 = biased_random(0.8);
-
-    let mut a: u8 = 0;
-    let mut b: u8 = 0;
-
-    if a1 == 0 && a2 == 1 {
-        a = 1;
-    } else if a1 == 1 && a2 == 0 {
-        a = 0;
-    } else {
-        unbiased_random();
-    };
-
-    if b1 == 0 && b2 == 1 {
-        b = 1;
-    } else if b1 == 1 && b2 == 0 {
-        b = 0;
-    } else {
-        unbiased_random();
-    };
-
-    if a == 0 && b == 1 {
-        return 1;
-    }
-    if a == 1 && b == 0 {
-        return 0;
-    }
-    unbiased_random()
+    let a = extract_unbiased(0.2);
+    let b = extract_unbiased(0.8);
+    a ^ b
 }
 
 #[test]
