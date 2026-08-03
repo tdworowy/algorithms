@@ -30,7 +30,6 @@ mod tests {
     #[test]
     fn test_quick_sort() {
         let mut to_sort = vec![10, 2, 822, 1, 5, 7, 4, 87, 88];
-        let r = to_sort.len() - 1;
         quick_sort(&mut to_sort);
         assert_eq!(to_sort, vec![1, 2, 4, 5, 7, 10, 87, 88, 822])
     }
