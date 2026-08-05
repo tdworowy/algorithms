@@ -1,4 +1,4 @@
-use crate::renderer::Renderer;
+use crate::renderer::{Renderer, TerminalRenderer};
 use std::cmp::Ordering;
 use std::fmt::Display;
 use std::io::{Write, stdout};
@@ -6,13 +6,9 @@ use std::io::{Write, stdout};
 #[derive(Debug, Clone)]
 pub enum SortEvent {
     Compare { first: usize, second: usize },
-
     Swap { first: usize, second: usize },
-
     Overwrite { index: usize },
-
     Mark { index: usize, kind: MarkKind },
-
     Step,
 }
 
@@ -59,18 +55,12 @@ where
     }
 }
 
-pub struct TerminalVisualizationObserver<R> {
-    renderer: R,
+pub struct TerminalVisualizationObserver<T> {
+    pub renderer: TerminalRenderer<T>,
 }
-
-impl<R> TerminalVisualizationObserver<R> {
-    pub fn new(renderer: R) -> Self {
-        Self { renderer }
-    }
-}
-impl<T, R> SortObserver<T> for TerminalVisualizationObserver<R>
+impl<T> SortObserver<T> for TerminalVisualizationObserver<T>
 where
-    R: Renderer<T>,
+    T: Clone + Display,
 {
     fn compare(&mut self, data: &[T], i: usize, j: usize) {
         self.renderer.compare(data, i, j);
@@ -80,6 +70,16 @@ where
     }
     fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
         self.renderer.overwrite(data, dst, src);
+    }
+}
+impl<T> TerminalVisualizationObserver<T> {
+    pub fn new(renderer: TerminalRenderer<T>) -> Self {
+        Self {
+            renderer,
+        }
+    }
+    pub fn renderer_mut(&mut self) -> &mut TerminalRenderer<T> {
+        &mut self.renderer
     }
 }
 
