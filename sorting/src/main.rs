@@ -1,6 +1,5 @@
-use std::io;
-
 use crate::renderer::{Animation, TerminalRenderer};
+use crossterm::event::KeyEventKind;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -13,6 +12,8 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders, List, ListItem},
 };
+use std::io;
+use std::time::Duration;
 
 mod bubble_sort;
 mod heap_sort;
@@ -68,7 +69,6 @@ fn main() -> io::Result<()> {
     let mut runner: Option<sort_runner::SortRunner> = None;
 
     loop {
-        // advance animation before drawing
         if let Some(runner) = &mut runner {
             if !runner.finished() {
                 runner.step();
@@ -103,42 +103,47 @@ fn main() -> io::Result<()> {
             }
         })?;
 
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => {
-                    break;
+        if event::poll(Duration::from_millis(30))? {
+            if let Event::Key(key) = event::read()? {
+                if key.kind != KeyEventKind::Press {
+                    continue;
                 }
-
-                KeyCode::Down => {
-                    if let Mode::Menu = app.mode {
-                        app.selected = (app.selected + 1) % app.algorithms.len();
+                match key.code {
+                    KeyCode::Char('q') | KeyCode::Esc => {
+                        break;
                     }
-                }
-                KeyCode::Up => {
-                    if let Mode::Menu = app.mode {
-                        if app.selected == 0 {
-                            app.selected = app.algorithms.len() - 1;
-                        } else {
-                            app.selected -= 1;
+
+                    KeyCode::Down => {
+                        if let Mode::Menu = app.mode {
+                            app.selected = (app.selected + 1) % app.algorithms.len();
                         }
                     }
-                }
-                KeyCode::Enter => {
-                    if let Mode::Menu = app.mode {
-                        if app.selected == app.algorithms.len() - 1 {
-                            break;
+                    KeyCode::Up => {
+                        if let Mode::Menu = app.mode {
+                            if app.selected == 0 {
+                                app.selected = app.algorithms.len() - 1;
+                            } else {
+                                app.selected -= 1;
+                            }
                         }
-
-                        runner = Some(create_algorithm(app.selected));
-
-                        app.mode = Mode::Visualizing;
                     }
+                    KeyCode::Enter => {
+                        if let Mode::Menu = app.mode {
+                            if app.selected == app.algorithms.len() - 1 {
+                                break;
+                            }
+
+                            runner = Some(create_algorithm(app.selected));
+
+                            app.mode = Mode::Visualizing;
+                        }
+                    }
+                    KeyCode::Char('r') => {
+                        runner = None;
+                        app.mode = Mode::Menu;
+                    }
+                    _ => {}
                 }
-                KeyCode::Char('r') => {
-                    runner = None;
-                    app.mode = Mode::Menu;
-                }
-                _ => {}
             }
         }
     }

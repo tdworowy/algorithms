@@ -10,9 +10,9 @@ impl SortRunner {
     pub(crate) fn new(choice: usize) -> Self {
         let mut rng = rand::rng();
         let mut data: Vec<u32> = (0..20).map(|_| rng.random_range(1..70)).collect();
+        let initial_data = data.clone();
 
         let mut observer = TerminalVisualizationObserver::new();
-
         match choice {
             0 => {
                 quick_sort::quick_sort(&mut data, &mut observer);
@@ -31,7 +31,7 @@ impl SortRunner {
             }
             _ => {}
         }
-        let animation = Animation::new(data, observer.events);
+        let animation = Animation::new(initial_data, observer.events);
         Self { animation }
     }
     pub(crate) fn step(&mut self) {
