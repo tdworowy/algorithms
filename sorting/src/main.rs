@@ -1,15 +1,13 @@
-use crate::renderer::{Animation, TerminalRenderer};
+use crate::renderer::TerminalRenderer;
 use crossterm::event::KeyEventKind;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use rand::RngExt;
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders, List, ListItem},
 };
 use std::io;
@@ -21,8 +19,10 @@ mod insertion_sort;
 mod merge_sort;
 mod quick_sort;
 
+mod insertion_and_merge_sort;
 mod observer;
 mod renderer;
+mod selection_sort;
 mod sort_runner;
 
 fn create_algorithm(choice: usize) -> sort_runner::SortRunner {
@@ -45,6 +45,7 @@ impl App {
                 "Quick Sort",
                 "Bubble Sort",
                 "Insertion Sort",
+                "Selection Sort",
                 "Heap Sort",
                 "Merge Sort",
                 "Quit",
@@ -152,4 +153,3 @@ fn main() -> io::Result<()> {
 
     Ok(())
 }
-// TODO switch BarChart to custom widget

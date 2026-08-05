@@ -1,5 +1,4 @@
 use crate::observer::{SortObserver, VisualArray};
-use rand::RngExt;
 
 pub fn insertion_sort<T, O>(array: &mut [T], observer: &mut O)
 where

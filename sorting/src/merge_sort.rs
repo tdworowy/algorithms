@@ -1,5 +1,4 @@
 use crate::observer::SortObserver;
-use rand::RngExt;
 
 pub fn merge_sort<T, O>(array: &mut [T], observer: &mut O)
 where

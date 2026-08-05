@@ -4,13 +4,13 @@ use std::time::Duration;
 use crate::observer::SortEvent;
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout},
     widgets::{BarChart, Block, Borders, Paragraph},
 };
 
 pub struct Animation<T> {
     data: Vec<T>,
-    events: Vec<SortEvent>,
+    events: Vec<SortEvent<T>>,
     position: usize,
 
     comparisons: usize,
@@ -21,7 +21,7 @@ pub struct Animation<T> {
 }
 
 impl<T> Animation<T> {
-    pub(crate) fn new(data: Vec<T>, events: Vec<SortEvent>) -> Animation<T> {
+    pub(crate) fn new(data: Vec<T>, events: Vec<SortEvent<T>>) -> Animation<T> {
         Self {
             data,
             events,
@@ -61,24 +61,21 @@ impl<T: Clone> Animation<T> {
         }
         self.comparing = None;
         self.swapping = None;
-        let event = &self.events[self.position];
+        let event = self.events[self.position].clone();
         match event {
             SortEvent::Swap { first, second } => {
-                self.data.swap(*first, *second);
-                self.swapping = Some((*first, *second));
+                self.data.swap(first, second);
+                self.swapping = Some((first, second));
                 self.swaps += 1;
             }
-            SortEvent::Overwrite { index, source } => {
-                if let Some(source) = source {
-                    self.data[*index] = self.data[*source].clone();
-                    self.writes += 1;
-                }
+            SortEvent::Overwrite { index, value } => {
+                self.data[index] = value;
+                self.writes += 1;
             }
             SortEvent::Compare { first, second } => {
-                self.comparing = Some((*first, *second));
+                self.comparing = Some((first, second));
                 self.comparisons += 1;
             }
-            _ => {}
         }
         self.position += 1;
     }
@@ -119,7 +116,6 @@ where
             .constraints([Constraint::Percentage(80), Constraint::Percentage(20)])
             .split(area);
 
-        // Keep labels alive during rendering
         let labels: Vec<String> = animation
             .data
             .iter()

@@ -2,10 +2,10 @@ use std::cmp::Ordering;
 use std::fmt::Display;
 
 #[derive(Debug, Clone)]
-pub enum SortEvent {
+pub enum SortEvent<T> {
     Compare { first: usize, second: usize },
     Swap { first: usize, second: usize },
-    Overwrite { index: usize, source: Option<usize> },
+    Overwrite { index: usize, value: T },
 }
 
 pub trait SortObserver<T> {
@@ -43,10 +43,10 @@ where
     }
 }
 
-pub struct TerminalVisualizationObserver {
-    pub(crate) events: Vec<SortEvent>,
+pub struct TerminalVisualizationObserver<T> {
+    pub(crate) events: Vec<SortEvent<T>>,
 }
-impl<T> SortObserver<T> for TerminalVisualizationObserver
+impl<T> SortObserver<T> for TerminalVisualizationObserver<T>
 where
     T: Clone + Display,
 {
@@ -65,11 +65,11 @@ where
     fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
         self.events.push(SortEvent::Overwrite {
             index: dst,
-            source: src,
+            value: data[dst].clone(),
         });
     }
 }
-impl TerminalVisualizationObserver {
+impl<T> TerminalVisualizationObserver<T> {
     pub fn new() -> Self {
         Self { events: Vec::new() }
     }
