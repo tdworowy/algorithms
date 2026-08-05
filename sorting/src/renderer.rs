@@ -8,12 +8,6 @@ use ratatui::{
     widgets::{BarChart, Block, Borders, Paragraph},
 };
 
-pub trait Renderer<T> {
-    fn compare(&mut self, data: &[T], i: usize, j: usize);
-    fn swap(&mut self, data: &[T], i: usize, j: usize);
-    fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>);
-}
-
 pub struct Animation<T> {
     data: Vec<T>,
     events: Vec<SortEvent>,

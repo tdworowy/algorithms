@@ -1,21 +1,11 @@
-use crate::renderer::{Renderer, TerminalRenderer};
 use std::cmp::Ordering;
 use std::fmt::Display;
-use std::io::{Write, stdout};
 
 #[derive(Debug, Clone)]
 pub enum SortEvent {
     Compare { first: usize, second: usize },
     Swap { first: usize, second: usize },
     Overwrite { index: usize, source: Option<usize> },
-}
-
-#[derive(Debug, Clone)]
-pub enum MarkKind {
-    Pivot,
-    Sorted,
-    Active,
-    Minimum,
 }
 
 pub trait SortObserver<T> {
