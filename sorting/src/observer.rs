@@ -1,11 +1,32 @@
+use crate::renderer::Renderer;
 use std::cmp::Ordering;
 use std::fmt::Display;
+use std::io::{Write, stdout};
+
+#[derive(Debug, Clone)]
+pub enum SortEvent {
+    Compare { first: usize, second: usize },
+
+    Swap { first: usize, second: usize },
+
+    Overwrite { index: usize },
+
+    Mark { index: usize, kind: MarkKind },
+
+    Step,
+}
+
+#[derive(Debug, Clone)]
+pub enum MarkKind {
+    Pivot,
+    Sorted,
+    Active,
+    Minimum,
+}
 
 pub trait SortObserver<T> {
     fn compare(&mut self, _data: &[T], _i: usize, _j: usize) {}
-
     fn swap(&mut self, _data: &[T], _i: usize, _j: usize) {}
-
     fn overwrite(&mut self, _data: &[T], _dst: usize, _src: Option<usize>) {}
 }
 
@@ -35,6 +56,30 @@ where
             None => println!("write at {}", dst),
         }
         print_array(data);
+    }
+}
+
+pub struct TerminalVisualizationObserver<R> {
+    renderer: R,
+}
+
+impl<R> TerminalVisualizationObserver<R> {
+    pub fn new(renderer: R) -> Self {
+        Self { renderer }
+    }
+}
+impl<T, R> SortObserver<T> for TerminalVisualizationObserver<R>
+where
+    R: Renderer<T>,
+{
+    fn compare(&mut self, data: &[T], i: usize, j: usize) {
+        self.renderer.compare(data, i, j);
+    }
+    fn swap(&mut self, data: &[T], i: usize, j: usize) {
+        self.renderer.swap(data, i, j);
+    }
+    fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
+        self.renderer.overwrite(data, dst, src);
     }
 }
 

@@ -16,60 +16,71 @@ where
     merge_sort_impl(array, &mut buffer, 0, len - 1, observer);
 }
 
-fn merge_sort_impl<T, O>(array: &mut [T], buffer: &mut [T], p: usize, r: usize, observer: &mut O)
-where
+fn merge_sort_impl<T, O>(
+    array: &mut [T],
+    buffer: &mut [T],
+    left: usize,
+    right: usize,
+    observer: &mut O,
+) where
     T: Ord + Clone,
     O: SortObserver<T>,
 {
-    if p >= r {
+    if left >= right {
         return;
     }
 
-    let q = p + (r - p) / 2;
+    let mid = left + (right - left) / 2;
 
-    merge_sort_impl(array, buffer, p, q, observer);
-    merge_sort_impl(array, buffer, q + 1, r, observer);
-    merge(array, buffer, p, q, r, observer);
+    merge_sort_impl(array, buffer, left, mid, observer);
+    merge_sort_impl(array, buffer, mid + 1, right, observer);
+    merge(array, buffer, left, mid, right, observer);
 }
 
-fn merge<T, O>(array: &mut [T], buffer: &mut [T], p: usize, q: usize, r: usize, observer: &mut O)
-where
+fn merge<T, O>(
+    array: &mut [T],
+    buffer: &mut [T],
+    left: usize,
+    mid: usize,
+    right: usize,
+    observer: &mut O,
+) where
     T: Ord + Clone,
     O: SortObserver<T>,
 {
-    buffer[p..=r].clone_from_slice(&array[p..=r]);
-    let mut i = p;
-    let mut j = q + 1;
-    let mut k = p;
+    buffer[left..=right].clone_from_slice(&array[left..=right]);
+    let mut left_index = left;
+    let mut right_index = mid + 1;
+    let mut write_index = left;
 
-    while i <= q && j <= r {
-        observer.compare(buffer, i, j);
+    while left_index <= mid && right_index <= right {
+        observer.compare(buffer, left_index, right_index);
 
-        if buffer[i] <= buffer[j] {
-            array[k] = buffer[i].clone();
-            observer.overwrite(array, k, Some(i));
-            i += 1;
+        if buffer[left_index] <= buffer[right_index] {
+            array[write_index] = buffer[left_index].clone();
+            observer.overwrite(array, write_index, Some(left_index));
+            left_index += 1;
         } else {
-            array[k] = buffer[j].clone();
-            observer.overwrite(array, k, Some(j));
-            j += 1;
+            array[write_index] = buffer[right_index].clone();
+            observer.overwrite(array, write_index, Some(right_index));
+            right_index += 1;
         }
 
-        k += 1;
+        write_index += 1;
     }
 
-    while i <= q {
-        array[k] = buffer[i].clone();
-        observer.overwrite(array, k, Some(i));
-        i += 1;
-        k += 1;
+    while left_index <= mid {
+        array[write_index] = buffer[left_index].clone();
+        observer.overwrite(array, write_index, Some(left_index));
+        left_index += 1;
+        write_index += 1;
     }
 
-    while j <= r {
-        array[k] = buffer[j].clone();
-        observer.overwrite(array, k, Some(j));
-        j += 1;
-        k += 1;
+    while right_index <= right {
+        array[write_index] = buffer[right_index].clone();
+        observer.overwrite(array, write_index, Some(right_index));
+        right_index += 1;
+        write_index += 1;
     }
 }
 #[cfg(test)]
