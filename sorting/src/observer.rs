@@ -7,9 +7,7 @@ use std::io::{Write, stdout};
 pub enum SortEvent {
     Compare { first: usize, second: usize },
     Swap { first: usize, second: usize },
-    Overwrite { index: usize },
-    Mark { index: usize, kind: MarkKind },
-    Step,
+    Overwrite { index: usize, source: Option<usize> },
 }
 
 #[derive(Debug, Clone)]
@@ -55,31 +53,35 @@ where
     }
 }
 
-pub struct TerminalVisualizationObserver<T> {
-    pub renderer: TerminalRenderer<T>,
+pub struct TerminalVisualizationObserver {
+    pub(crate) events: Vec<SortEvent>,
 }
-impl<T> SortObserver<T> for TerminalVisualizationObserver<T>
+impl<T> SortObserver<T> for TerminalVisualizationObserver
 where
     T: Clone + Display,
 {
     fn compare(&mut self, data: &[T], i: usize, j: usize) {
-        self.renderer.compare(data, i, j);
+        self.events.push(SortEvent::Compare {
+            first: i,
+            second: j,
+        });
     }
     fn swap(&mut self, data: &[T], i: usize, j: usize) {
-        self.renderer.swap(data, i, j);
+        self.events.push(SortEvent::Swap {
+            first: i,
+            second: j,
+        });
     }
     fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
-        self.renderer.overwrite(data, dst, src);
+        self.events.push(SortEvent::Overwrite {
+            index: dst,
+            source: src,
+        });
     }
 }
-impl<T> TerminalVisualizationObserver<T> {
-    pub fn new(renderer: TerminalRenderer<T>) -> Self {
-        Self {
-            renderer,
-        }
-    }
-    pub fn renderer_mut(&mut self) -> &mut TerminalRenderer<T> {
-        &mut self.renderer
+impl TerminalVisualizationObserver {
+    pub fn new() -> Self {
+        Self { events: Vec::new() }
     }
 }
 
