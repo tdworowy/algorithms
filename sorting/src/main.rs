@@ -16,9 +16,11 @@ fn main() {
     println!("{:?}", data);
 
     let mut observer = TerminalObserver;
-    quick_sort::quick_sort(&mut data, &mut observer);
+    //quick_sort::quick_sort(&mut data, &mut observer);
     //bubble_sort::bubble_sort(&mut data, &mut observer);
     //insertion_sort::insertion_sort(&mut data, &mut observer);
+    // heap_sort::heap_sort(&mut data, &mut observer);
+    merge_sort::merge_sort(&mut data, &mut observer);
 
     println!("After:");
     println!("{:?}", data);

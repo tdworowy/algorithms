@@ -30,7 +30,7 @@ mod tests {
     use crate::observer::NoOpObserver;
 
     #[test]
-    fn test_insertion_sort() {
+    fn test_insertion_sort1() {
         let mut array = vec![10, 2, 1, 5, 7, 4, 87, 822];
         insertion_sort(&mut array, &mut NoOpObserver);
         assert_eq!(array, vec![1, 2, 4, 5, 7, 10, 87, 822]);

@@ -1,56 +1,39 @@
-use rand::RngExt;
-use std::time::{SystemTime, UNIX_EPOCH};
+use crate::observer::SortObserver;
+use crate::{insertion_sort, merge_sort};
 
-fn insertion_sort<T: Ord + Copy>(v: &mut [T]) -> &mut [T] {
-    for i in 1..v.len() {
-        let key = v[i].clone();
-        let mut j = i;
-        while j > 0 && v[j - 1] > key {
-            v[j] = v[j - 1].clone();
-            j -= 1;
-        }
-        v[j] = key;
-    }
-    v
-}
-fn merge<T: Ord + Copy>(left: &[T], right: &[T]) -> Vec<T> {
-    let mut result = Vec::with_capacity(left.len() + right.len());
-
-    let mut i = 0;
-    let mut j = 0;
-
-    while i < left.len() && j < right.len() {
-        if left[i] <= right[j] {
-            result.push(left[i]);
-            i += 1;
-        } else {
-            result.push(right[j]);
-            j += 1;
-        }
-    }
-
-    result.extend_from_slice(&left[i..]);
-    result.extend_from_slice(&right[j..]);
-
-    result
-}
-
-fn merge_sort<T: Ord + Copy>(array: &mut [T], k: usize) -> Vec<T> {
+fn insertion_and_merge_sort<T, O>(array: &mut [T], k: usize, observer: &mut O) -> Vec<T>
+where
+    T: Ord + Clone + Copy,
+    O: SortObserver<T>,
+{
     let n = array.len();
     if n < 2 {
         return array.to_vec();
     }
     if n < k {
-        insertion_sort(array).to_vec()
+        insertion_sort::insertion_sort(array, observer);
+        array.to_vec()
     } else {
-        let mid = n / 2;
-        let mut left = array[..mid].to_vec();
-        let mut right = array[mid..].to_vec();
+        merge_sort::merge_sort(array, observer);
+        array.to_vec()
+    }
+}
 
-        let left_sorted = merge_sort(&mut left, k);
-        let right_sorted = merge_sort(&mut right, k);
-        let new_array = merge(left_sorted.as_ref(), right_sorted.as_ref());
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::observer::NoOpObserver;
 
-        new_array
+    #[test]
+    fn test_insertion_and_merge_sort1() {
+        let mut array = vec![10, 2, 1, 5, 7, 4, 87, 822];
+        insertion_and_merge_sort(&mut array, 50, &mut NoOpObserver);
+        assert_eq!(array, vec![1, 2, 4, 5, 7, 10, 87, 822]);
+    }
+    #[test]
+    fn test_insertion_and_merge_sort2() {
+        let mut array = vec![10, 2, 1, 5, 7, 4, 87, 822];
+        insertion_and_merge_sort(&mut array, 5, &mut NoOpObserver);
+        assert_eq!(array, vec![1, 2, 4, 5, 7, 10, 87, 822]);
     }
 }
