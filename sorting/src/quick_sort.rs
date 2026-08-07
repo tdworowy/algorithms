@@ -54,8 +54,8 @@ mod tests {
 
     #[test]
     fn test_quick_sort() {
-        let mut to_sort = vec![10, 2, 822, 1, 5, 7, 4, 87, 88];
+        let mut to_sort = vec![10, 2, 822, 1, 5, 7, 4, 87, 88, 5, 4];
         quick_sort(&mut to_sort, &mut NoOpObserver);
-        assert_eq!(to_sort, vec![1, 2, 4, 5, 7, 10, 87, 88, 822])
+        assert_eq!(to_sort, vec![1, 2, 4, 4, 5, 5, 7, 10, 87, 88, 822])
     }
 }

@@ -125,8 +125,8 @@ mod tests {
 
     #[test]
     fn test_heap_sort() {
-        let mut arr = vec![128, 3, 6, 2, 1, 8, 9];
+        let mut arr = vec![128, 3, 6, 2, 1, 8, 9, 2, 3];
         heap_sort(&mut arr, &mut NoOpObserver);
-        assert_eq!(arr, vec![1, 2, 3, 6, 8, 9, 128]);
+        assert_eq!(arr, vec![1, 2, 2, 3, 3, 6, 8, 9, 128]);
     }
 }

@@ -30,8 +30,8 @@ mod tests {
 
     #[test]
     fn test_insertion_sort1() {
-        let mut array = vec![10, 2, 1, 5, 7, 4, 87, 822];
+        let mut array = vec![10, 2, 1, 5, 7, 4, 87, 822, 2, 3, 4, 5];
         insertion_sort(&mut array, &mut NoOpObserver);
-        assert_eq!(array, vec![1, 2, 4, 5, 7, 10, 87, 822]);
+        assert_eq!(array, vec![1, 2, 2, 3, 4, 4, 5, 5, 7, 10, 87, 822]);
     }
 }

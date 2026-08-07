@@ -134,8 +134,8 @@ mod tests {
     }
     #[test]
     fn test_merge_sort2() {
-        let mut arr = vec![10, 2, 1, 5, 7, 4, 87, 822];
+        let mut arr = vec![10, 2, 1, 5, 7, 4, 87, 822, 10, 2];
         merge_sort(&mut arr, &mut NoOpObserver);
-        assert_eq!(arr, vec![1, 2, 4, 5, 7, 10, 87, 822]);
+        assert_eq!(arr, vec![1, 2, 2, 4, 5, 7, 10, 10, 87, 822]);
     }
 }

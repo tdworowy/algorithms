@@ -15,11 +15,11 @@ use std::time::Duration;
 
 mod bubble_sort;
 mod heap_sort;
+mod insertion_and_merge_sort;
 mod insertion_sort;
 mod merge_sort;
-mod quick_sort;
-mod insertion_and_merge_sort;
 mod observer;
+mod quick_sort;
 mod renderer;
 mod selection_sort;
 mod sort_runner;

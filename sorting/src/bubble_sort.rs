@@ -30,8 +30,8 @@ mod tests {
 
     #[test]
     fn test_bubble_sort() {
-        let mut array = vec![3, 5, 1, 6, 4];
+        let mut array = vec![3, 5, 1, 6, 4, 6, 5];
         bubble_sort(&mut array, &mut NoOpObserver);
-        assert_eq!(array, [1, 3, 4, 5, 6]);
+        assert_eq!(array, [1, 3, 4, 5, 5, 6, 6]);
     }
 }
