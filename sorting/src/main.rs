@@ -14,6 +14,7 @@ use std::io;
 use std::time::Duration;
 
 mod bubble_sort;
+mod counting_sort;
 mod heap_sort;
 mod insertion_and_merge_sort;
 mod insertion_sort;
