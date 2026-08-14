@@ -3,15 +3,45 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone)]
 pub enum SortEvent<T> {
-    Compare { first: usize, second: usize },
-    Swap { first: usize, second: usize },
-    Overwrite { index: usize, value: T },
+    Compare {
+        first: usize,
+        second: usize,
+    },
+    Swap {
+        first: usize,
+        second: usize,
+    },
+    Overwrite {
+        index: usize,
+        value: T,
+    },
+    Counting {
+        counts: Vec<usize>,
+        output: Vec<T>,
+        state: CountingState<T>,
+        exp: Option<u32>,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub enum CountingState<T> {
+    Counting,
+    Summing,
+    Placing { current_val: T },
 }
 
 pub trait SortObserver<T> {
     fn compare(&mut self, _data: &[T], _i: usize, _j: usize) {}
     fn swap(&mut self, _data: &[T], _i: usize, _j: usize) {}
     fn overwrite(&mut self, _data: &[T], _dst: usize, _src: Option<usize>) {}
+    fn counting(
+        &mut self,
+        _counts: &[usize],
+        _output: &[T],
+        _state: CountingState<T>,
+        _exp: Option<u32>,
+    ) {
+    }
 }
 
 pub struct NoOpObserver;
@@ -50,22 +80,37 @@ impl<T> SortObserver<T> for TerminalVisualizationObserver<T>
 where
     T: Clone + Display,
 {
-    fn compare(&mut self, data: &[T], i: usize, j: usize) {
+    fn compare(&mut self, _data: &[T], i: usize, j: usize) {
         self.events.push(SortEvent::Compare {
             first: i,
             second: j,
         });
     }
-    fn swap(&mut self, data: &[T], i: usize, j: usize) {
+    fn swap(&mut self, _data: &[T], i: usize, j: usize) {
         self.events.push(SortEvent::Swap {
             first: i,
             second: j,
         });
     }
-    fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
+    fn overwrite(&mut self, data: &[T], dst: usize, _src: Option<usize>) {
         self.events.push(SortEvent::Overwrite {
             index: dst,
             value: data[dst].clone(),
+        });
+    }
+
+    fn counting(
+        &mut self,
+        counts: &[usize],
+        output: &[T],
+        state: CountingState<T>,
+        exp: Option<u32>,
+    ) {
+        self.events.push(SortEvent::Counting {
+            counts: counts.to_vec(),
+            output: output.to_vec(),
+            state,
+            exp,
         });
     }
 }

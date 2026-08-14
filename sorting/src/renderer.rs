@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::time::Duration;
 
-use crate::observer::SortEvent;
+use crate::observer;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
@@ -10,7 +10,7 @@ use ratatui::{
 
 pub struct Animation<T> {
     data: Vec<T>,
-    events: Vec<SortEvent<T>>,
+    events: Vec<observer::SortEvent<T>>,
     position: usize,
 
     comparisons: usize,
@@ -18,10 +18,16 @@ pub struct Animation<T> {
     writes: usize,
     comparing: Option<(usize, usize)>,
     swapping: Option<(usize, usize)>,
+    counting: Option<(
+        Vec<usize>,
+        Vec<T>,
+        crate::observer::CountingState<T>,
+        Option<u32>,
+    )>,
 }
 
 impl<T> Animation<T> {
-    pub(crate) fn new(data: Vec<T>, events: Vec<SortEvent<T>>) -> Animation<T> {
+    pub(crate) fn new(data: Vec<T>, events: Vec<observer::SortEvent<T>>) -> Animation<T> {
         Self {
             data,
             events,
@@ -31,6 +37,7 @@ impl<T> Animation<T> {
             writes: 0,
             comparing: None,
             swapping: None,
+            counting: None,
         }
     }
     pub fn data(&self) -> &[T] {
@@ -61,20 +68,30 @@ impl<T: Clone> Animation<T> {
         }
         self.comparing = None;
         self.swapping = None;
+        self.counting = None;
         let event = self.events[self.position].clone();
         match event {
-            SortEvent::Swap { first, second } => {
+            observer::SortEvent::Swap { first, second } => {
                 self.data.swap(first, second);
                 self.swapping = Some((first, second));
                 self.swaps += 1;
             }
-            SortEvent::Overwrite { index, value } => {
+            observer::SortEvent::Overwrite { index, value } => {
                 self.data[index] = value;
                 self.writes += 1;
             }
-            SortEvent::Compare { first, second } => {
+            observer::SortEvent::Compare { first, second } => {
                 self.comparing = Some((first, second));
                 self.comparisons += 1;
+            }
+            observer::SortEvent::Counting {
+                counts,
+                output,
+                state,
+                exp,
+            } => {
+                self.counting = Some((counts, output, state, exp));
+                self.writes += 1;
             }
         }
         self.position += 1;
@@ -110,6 +127,78 @@ where
         T: Display,
     {
         let area = frame.area();
+
+        if let Some((counts, output, state, exp)) = &animation.counting {
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Percentage(33),
+                    Constraint::Percentage(33),
+                    Constraint::Percentage(33),
+                ])
+                .split(area);
+
+            // Input Array
+            let input_labels: Vec<String> =
+                (0..animation.data.len()).map(|i| i.to_string()).collect();
+            let input_values: Vec<(&str, u64)> = animation
+                .data
+                .iter()
+                .zip(input_labels.iter())
+                .map(|(v, l)| (l.as_str(), v.to_string().parse::<u64>().unwrap_or(0)))
+                .collect();
+            let input_title = if let Some(e) = exp {
+                format!("Input Array (exp: {})", e)
+            } else {
+                "Input Array".to_string()
+            };
+            let input_chart = BarChart::default()
+                .block(Block::default().title(input_title).borders(Borders::ALL))
+                .data(&input_values)
+                .bar_width(3);
+            frame.render_widget(input_chart, chunks[0]);
+
+            // Counts Array
+            let count_labels: Vec<String> = (0..counts.len()).map(|i| i.to_string()).collect();
+            let count_values: Vec<(&str, u64)> = counts
+                .iter()
+                .zip(count_labels.iter())
+                .map(|(&v, l)| (l.as_str(), v as u64))
+                .collect();
+            let count_chart = BarChart::default()
+                .block(Block::default().title("Count Array").borders(Borders::ALL))
+                .data(&count_values)
+                .bar_width(3);
+            frame.render_widget(count_chart, chunks[1]);
+
+            // Output Array
+            let output_labels: Vec<String> = (0..output.len()).map(|i| i.to_string()).collect();
+            let output_values: Vec<(&str, u64)> = output
+                .iter()
+                .zip(output_labels.iter())
+                .map(|(v, l)| (l.as_str(), v.to_string().parse::<u64>().unwrap_or(0)))
+                .collect();
+            let state_info;
+            let state_str = match state {
+                observer::CountingState::Counting => "Counting occurrences",
+                observer::CountingState::Summing => "Cumulative sum",
+                observer::CountingState::Placing { current_val } => {
+                    state_info = format!("Placing {}", current_val);
+                    &state_info
+                }
+            };
+            let output_chart = BarChart::default()
+                .block(
+                    Block::default()
+                        .title(format!("Output Array - {}", state_str))
+                        .borders(Borders::ALL),
+                )
+                .data(&output_values)
+                .bar_width(3);
+            frame.render_widget(output_chart, chunks[2]);
+
+            return;
+        }
 
         let chunks = Layout::default()
             .direction(Direction::Vertical)

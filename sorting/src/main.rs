@@ -21,6 +21,7 @@ mod insertion_sort;
 mod merge_sort;
 mod observer;
 mod quick_sort;
+mod radix_sort;
 mod renderer;
 mod selection_sort;
 mod sort_runner;
@@ -48,6 +49,8 @@ impl App {
                 "Selection Sort",
                 "Heap Sort",
                 "Merge Sort",
+                "Counting Sort",
+                "Radix Sort",
                 "Quit",
             ],
             selected: 0,
