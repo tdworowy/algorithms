@@ -1,18 +1,21 @@
 use crate::observer::{CountingState, SortObserver};
 
-pub fn counting_sort<O>(arr: &[usize], observer: &mut O) -> Vec<usize>
+pub fn counting_sort<O, T>(arr: &[T], observer: &mut O) -> Vec<T>
 where
-    O: SortObserver<usize>,
+    T: Copy + TryInto<usize> + TryFrom<usize>,
+    <T as TryInto<usize>>::Error: std::fmt::Debug,
+    <T as TryFrom<usize>>::Error: std::fmt::Debug,
+    O: SortObserver<T>,
 {
     if arr.is_empty() {
         return Vec::new();
     }
-    let max = *arr.iter().max().unwrap();
+    let max = arr.iter().map(|&x| x.try_into().unwrap()).max().unwrap();
     let mut count = vec![0usize; max + 1];
-    let mut output = vec![0usize; arr.len()];
+    let mut output = vec![T::try_from(0).unwrap(); arr.len()];
 
     for &x in arr {
-        count[x] += 1;
+        count[x.try_into().unwrap()] += 1;
         observer.counting(&count, &output, CountingState::Counting, None);
     }
     for i in 1..count.len() {
@@ -20,8 +23,9 @@ where
         observer.counting(&count, &output, CountingState::Summing, None);
     }
     for &x in arr.iter().rev() {
-        count[x] -= 1;
-        output[count[x]] = x;
+        let val: usize = x.try_into().unwrap();
+        count[val] -= 1;
+        output[count[val]] = x;
         observer.counting(
             &count,
             &output,

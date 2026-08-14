@@ -36,43 +36,7 @@ impl SortRunner {
                 merge_sort::merge_sort(&mut data, &mut observer);
             }
             6 => {
-                let data_usize: Vec<usize> = data.iter().map(|&x| x as usize).collect();
-                let mut counting_observer = observer::TerminalVisualizationObserver::<usize>::new();
-                counting_sort::counting_sort(&data_usize, &mut counting_observer);
-
-                let events = counting_observer
-                    .events
-                    .into_iter()
-                    .map(|e| match e {
-                        observer::SortEvent::Counting {
-                            counts,
-                            output,
-                            state,
-                            exp,
-                        } => observer::SortEvent::Counting {
-                            counts,
-                            output: output.into_iter().map(|x| x as u32).collect(),
-                            state: match state {
-                                observer::CountingState::Counting => {
-                                    observer::CountingState::Counting
-                                }
-                                observer::CountingState::Summing => {
-                                    observer::CountingState::Summing
-                                }
-                                observer::CountingState::Placing { current_val } => {
-                                    observer::CountingState::Placing {
-                                        current_val: current_val as u32,
-                                    }
-                                }
-                            },
-                            exp,
-                        },
-                        _ => unreachable!(),
-                    })
-                    .collect();
-
-                let animation = Animation::new(data, events);
-                return Self { animation };
+                counting_sort::counting_sort(&data, &mut observer);
             }
             7 => {
                 radix_sort::radix_sort(&mut data, &mut observer);
