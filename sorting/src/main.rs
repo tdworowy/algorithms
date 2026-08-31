@@ -19,6 +19,7 @@ mod counting_sort;
 mod heap_sort;
 mod insertion_and_merge_sort;
 mod insertion_sort;
+mod insertion_sort_bucket;
 mod merge_sort;
 mod observer;
 mod quick_sort;

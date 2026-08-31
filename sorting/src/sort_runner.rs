@@ -13,7 +13,7 @@ pub(crate) struct SortRunner {
 impl SortRunner {
     pub(crate) fn new(choice: usize) -> Self {
         let mut rng = rand::rng();
-        let mut data: Vec<u32> = (0..60).map(|_| rng.random_range(1..100)).collect();
+        let mut data: Vec<u32> = (0..60).map(|_| rng.random_range(1..20)).collect();
         let initial_data = data.clone();
 
         let mut observer = observer::TerminalVisualizationObserver::new();

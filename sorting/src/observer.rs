@@ -21,9 +21,22 @@ pub enum SortEvent<T> {
         state: CountingState<T>,
         exp: Option<u32>,
     },
+    BucketStart {
+        count: usize,
+    },
     Bucket {
         index: usize,
         bucket: usize,
+    },
+    BucketCompare {
+        bucket: usize,
+        first: usize,
+        second: usize,
+    },
+    BucketOverwrite {
+        bucket: usize,
+        index: usize,
+        value: T,
     },
 }
 
@@ -46,7 +59,10 @@ pub trait SortObserver<T> {
         _exp: Option<u32>,
     ) {
     }
+    fn bucket_start(&mut self, _count: usize) {}
     fn bucket(&mut self, _index: usize, _bucket: usize) {}
+    fn bucket_compare(&mut self, _bucket: usize, _first: usize, _second: usize) {}
+    fn bucket_overwrite(&mut self, _bucket: usize, _index: usize, _value: T) {}
 }
 
 pub struct NoOpObserver;
@@ -63,12 +79,10 @@ where
         println!("compare [{}] and [{}]", data[i], data[j]);
         print_array(data);
     }
-
     fn swap(&mut self, data: &[T], i: usize, j: usize) {
         println!("swap [{}] <-> [{}]", data[i], data[j]);
         print_array(data);
     }
-
     fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
         match src {
             Some(s) => println!("shift {} -> {}", s, dst),
@@ -103,7 +117,6 @@ where
             value: data[dst].clone(),
         });
     }
-
     fn counting(
         &mut self,
         counts: &[usize],
@@ -118,8 +131,54 @@ where
             exp,
         });
     }
+    fn bucket_start(&mut self, _count: usize) {
+        self.events.push(SortEvent::BucketStart { count: _count });
+    }
     fn bucket(&mut self, index: usize, bucket: usize) {
         self.events.push(SortEvent::Bucket { index, bucket });
+    }
+    fn bucket_compare(&mut self, bucket: usize, first: usize, second: usize) {
+        self.events.push(SortEvent::BucketCompare {
+            bucket,
+            first,
+            second,
+        });
+    }
+    fn bucket_overwrite(&mut self, bucket: usize, index: usize, value: T) {
+        self.events.push(SortEvent::BucketOverwrite {
+            bucket,
+            index,
+            value,
+        });
+    }
+}
+pub struct OffsetObserver<'a, O> {
+    observer: &'a mut O,
+    offset: usize,
+}
+
+impl<'a, O> OffsetObserver<'a, O> {
+    pub fn new(observer: &'a mut O, offset: usize) -> Self {
+        Self { observer, offset }
+    }
+}
+impl<T, O> SortObserver<T> for OffsetObserver<'_, O>
+where
+    O: SortObserver<T>,
+{
+    fn compare(&mut self, data: &[T], first: usize, second: usize) {
+        self.observer
+            .compare(data, first + self.offset, second + self.offset);
+    }
+
+    fn swap(&mut self, data: &[T], first: usize, second: usize) {
+        self.observer
+            .swap(data, first + self.offset, second + self.offset);
+    }
+
+    fn overwrite(&mut self, data: &[T], dst: usize, src: Option<usize>) {
+        self.observer
+            .overwrite(data, dst + self.offset, src.map(|src| src + self.offset));
     }
 }
 

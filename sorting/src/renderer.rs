@@ -20,9 +20,12 @@ pub struct Animation<T> {
     swapping: Option<(usize, usize)>,
     counting: Option<(Vec<usize>, Vec<T>, observer::CountingState<T>, Option<u32>)>,
     bucket_assignments: Vec<Option<usize>>,
+    buckets: Option<Vec<Vec<T>>>,
+    bucket_comparing: Option<(usize, usize, usize)>,
+    bucket_swapping: Option<(usize, usize, usize)>,
 }
 
-impl<T> Animation<T> {
+impl<T: Clone> Animation<T> {
     pub(crate) fn new(data: Vec<T>, events: Vec<observer::SortEvent<T>>) -> Animation<T> {
         let data_len = data.len();
         Self {
@@ -36,6 +39,9 @@ impl<T> Animation<T> {
             swapping: None,
             counting: None,
             bucket_assignments: vec![None; data_len],
+            buckets: None,
+            bucket_comparing: None,
+            bucket_swapping: None,
         }
     }
     pub fn data(&self) -> &[T] {
@@ -53,7 +59,6 @@ impl<T> Animation<T> {
     pub fn swaps(&self) -> usize {
         self.swaps
     }
-
     pub fn writes(&self) -> usize {
         self.writes
     }
@@ -67,6 +72,8 @@ impl<T: Clone> Animation<T> {
         self.comparing = None;
         self.swapping = None;
         self.counting = None;
+        self.bucket_comparing = None;
+        self.bucket_swapping = None;
         let event = self.events[self.position].clone();
         match event {
             observer::SortEvent::Swap { first, second } => {
@@ -91,8 +98,32 @@ impl<T: Clone> Animation<T> {
                 self.counting = Some((counts, output, state, exp));
                 self.writes += 1;
             }
+            observer::SortEvent::BucketStart { count } => {
+                self.buckets = Some(vec![Vec::new(); count]);
+            }
             observer::SortEvent::Bucket { index, bucket } => {
-                self.bucket_assignments[index] = Some(bucket);
+                if let Some(buckets) = &mut self.buckets {
+                    buckets[bucket].push(self.data[index].clone());
+                }
+            }
+            observer::SortEvent::BucketCompare {
+                bucket,
+                first,
+                second,
+            } => {
+                self.bucket_comparing = Some((bucket, first, second));
+                self.comparisons += 1;
+            }
+
+            observer::SortEvent::BucketOverwrite {
+                bucket,
+                index,
+                value,
+            } => {
+                if let Some(buckets) = &mut self.buckets {
+                    buckets[bucket][index] = value;
+                }
+                self.writes += 1;
             }
         }
         self.position += 1;

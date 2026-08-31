@@ -1,4 +1,4 @@
-use crate::insertion_sort::insertion_sort;
+use crate::insertion_sort_bucket;
 use crate::observer::SortObserver;
 
 pub fn bucket_sort<T, O>(array: &mut [T], observer: &mut O)
@@ -12,31 +12,47 @@ where
         return;
     }
     let bucket_count = array.len();
-    let min_value = *array.iter().min().unwrap();
-    let max_value = *array.iter().max().unwrap();
-    let min: usize = min_value.try_into().unwrap();
-    let max: usize = max_value.try_into().unwrap();
-    let range = max - min + 1;
+    observer.bucket_start(bucket_count);
+
+    let min_value = array
+        .iter()
+        .map(|value| value.clone().try_into().unwrap())
+        .min()
+        .unwrap();
+
+    let max_value = array
+        .iter()
+        .map(|value| value.clone().try_into().unwrap())
+        .max()
+        .unwrap();
+
+    let range = max_value - min_value + 1;
     let mut buckets: Vec<Vec<T>> = vec![Vec::new(); bucket_count];
 
-    // Distribute
-    for &value in array.iter() {
-        let numeric_value: usize = value.try_into().unwrap();
-        let bucket_index = ((numeric_value - min) * bucket_count) / range;
-        let bucket_index = bucket_index.min(bucket_count - 1);
-        buckets[bucket_index].push(value);
+    // Distribute elements into buckets.
+    for (index, value) in array.iter().enumerate() {
+        let numeric_value: usize = value.clone().try_into().unwrap();
+
+        let bucket = ((numeric_value - min_value) * bucket_count) / range;
+
+        // Prevent bucket_count from becoming a valid-looking
+        // but actually out-of-bounds index.
+        let bucket = bucket.min(bucket_count - 1);
+        buckets[bucket].push(value.clone());
+        observer.bucket(index, bucket);
     }
-    // Sort buckets
-    for bucket in buckets.iter_mut() {
-        insertion_sort(bucket, observer);
+    // Sort each bucket.
+    for (bucket_index, bucket) in buckets.iter_mut().enumerate() {
+        insertion_sort_bucket::insertion_sort_bucket(bucket, bucket_index, observer);
     }
-    // Collect
-    let mut output_index = 0;
-    for bucket in buckets {
+    // Concatenate buckets back into the original array.
+    let mut array_index = 0;
+    for bucket in buckets.iter() {
         for value in bucket {
-            array[output_index] = value;
-            observer.overwrite(array, output_index, None);
-            output_index += 1;
+            array[array_index] = value.clone();
+            observer.overwrite(array, array_index, None);
+
+            array_index += 1;
         }
     }
 }
