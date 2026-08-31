@@ -1,10 +1,11 @@
-use crate::observer;
 use crate::renderer::Animation;
 use crate::{
     bubble_sort, counting_sort, heap_sort, insertion_sort, merge_sort, quick_sort, radix_sort,
     selection_sort,
 };
+use crate::{bucket_sort, observer};
 use rand::RngExt;
+
 pub(crate) struct SortRunner {
     pub(crate) animation: Animation<u32>,
 }
@@ -40,6 +41,9 @@ impl SortRunner {
             }
             7 => {
                 radix_sort::radix_sort(&mut data, &mut observer);
+            }
+            8 => {
+                bucket_sort::bucket_sort(&mut data, &mut observer);
             }
             _ => {}
         }

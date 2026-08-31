@@ -18,16 +18,13 @@ pub struct Animation<T> {
     writes: usize,
     comparing: Option<(usize, usize)>,
     swapping: Option<(usize, usize)>,
-    counting: Option<(
-        Vec<usize>,
-        Vec<T>,
-        crate::observer::CountingState<T>,
-        Option<u32>,
-    )>,
+    counting: Option<(Vec<usize>, Vec<T>, observer::CountingState<T>, Option<u32>)>,
+    bucket_assignments: Vec<Option<usize>>,
 }
 
 impl<T> Animation<T> {
     pub(crate) fn new(data: Vec<T>, events: Vec<observer::SortEvent<T>>) -> Animation<T> {
+        let data_len = data.len();
         Self {
             data,
             events,
@@ -38,6 +35,7 @@ impl<T> Animation<T> {
             comparing: None,
             swapping: None,
             counting: None,
+            bucket_assignments: vec![None; data_len],
         }
     }
     pub fn data(&self) -> &[T] {
@@ -92,6 +90,9 @@ impl<T: Clone> Animation<T> {
             } => {
                 self.counting = Some((counts, output, state, exp));
                 self.writes += 1;
+            }
+            observer::SortEvent::Bucket { index, bucket } => {
+                self.bucket_assignments[index] = Some(bucket);
             }
         }
         self.position += 1;

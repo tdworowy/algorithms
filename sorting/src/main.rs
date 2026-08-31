@@ -14,6 +14,7 @@ use std::io;
 use std::time::Duration;
 
 mod bubble_sort;
+mod bucket_sort;
 mod counting_sort;
 mod heap_sort;
 mod insertion_and_merge_sort;
@@ -51,6 +52,7 @@ impl App {
                 "Merge Sort",
                 "Counting Sort",
                 "Radix Sort",
+                "Bucket Sort",
                 "Quit",
             ],
             selected: 0,

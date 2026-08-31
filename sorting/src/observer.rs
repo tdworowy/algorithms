@@ -21,6 +21,10 @@ pub enum SortEvent<T> {
         state: CountingState<T>,
         exp: Option<u32>,
     },
+    Bucket {
+        index: usize,
+        bucket: usize,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -42,6 +46,7 @@ pub trait SortObserver<T> {
         _exp: Option<u32>,
     ) {
     }
+    fn bucket(&mut self, _index: usize, _bucket: usize) {}
 }
 
 pub struct NoOpObserver;
@@ -113,7 +118,11 @@ where
             exp,
         });
     }
+    fn bucket(&mut self, index: usize, bucket: usize) {
+        self.events.push(SortEvent::Bucket { index, bucket });
+    }
 }
+
 impl<T> TerminalVisualizationObserver<T> {
     pub fn new() -> Self {
         Self { events: Vec::new() }
