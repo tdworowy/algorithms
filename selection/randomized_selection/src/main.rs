@@ -20,7 +20,16 @@ fn randomized_partition<T: Ord + Copy>(array: &mut [T], p: usize, r: usize) -> u
     partition(array, p, r)
 }
 
-fn randomized_selection<T: Ord + Copy>(array: &mut [T], p: usize, r: usize, i: usize) -> T {
+fn randomized_selection<T: Ord + Copy + std::fmt::Debug>(
+    array: &mut [T],
+    p: usize,
+    r: usize,
+    i: usize,
+) -> T {
+    println!(
+        "selection: [{p}..={r}] = {:?}, looking for {i}",
+        &array[p..=r]
+    );
     if p == r {
         return array[p];
     }
